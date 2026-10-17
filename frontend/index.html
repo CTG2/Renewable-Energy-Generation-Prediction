@@ -1,0 +1,2150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EcoPredict</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+      :root {
+        --bg-primary: #f8fafc;
+        --bg-secondary: #ffffff;
+        --bg-tertiary: #f1f5f9;
+        --text-primary: #0f172a;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --accent-primary: #0ea5e9;
+        --accent-secondary: #06b6d4;
+        --accent-tertiary: #8b5cf6;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --border: #e2e8f0;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      [data-theme="dark"] {
+        --bg-primary: #0f172a;
+        --bg-secondary: #1e293b;
+        --bg-tertiary: #334155;
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --border: #334155;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5),
+          0 2px 4px -1px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5),
+          0 4px 6px -2px rgba(0, 0, 0, 0.3);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5),
+          0 10px 10px -5px rgba(0, 0, 0, 0.3);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        line-height: 1.6;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        overflow-x: hidden;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 400px;
+        background: linear-gradient(
+          135deg,
+          rgba(14, 165, 233, 0.1) 0%,
+          rgba(139, 92, 246, 0.1) 50%,
+          rgba(6, 182, 212, 0.1) 100%
+        );
+        z-index: -1;
+        animation: gradientShift 15s ease infinite;
+      }
+      @keyframes gradientShift {
+        0%,
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        50% {
+          opacity: 0.8;
+          transform: translateY(-20px);
+        }
+      }
+      .container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px 0;
+        margin-bottom: 32px;
+        position: relative;
+      }
+      .brand {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+      .logo {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(
+          135deg,
+          var(--accent-primary),
+          var(--accent-tertiary)
+        );
+        color: white;
+        font-weight: 800;
+        font-size: 24px;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+      }
+      .logo:hover {
+        transform: scale(1.1) rotate(5deg);
+      }
+      .logo::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+          45deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent
+        );
+        animation: logoShine 3s infinite;
+      }
+      @keyframes logoShine {
+        0% {
+          transform: rotate(0deg) translate(-50%, -50%);
+        }
+        100% {
+          transform: rotate(360deg) translate(-50%, -50%);
+        }
+      }
+      h1 {
+        font-size: 28px;
+        font-weight: 800;
+        background: linear-gradient(
+          135deg,
+          var(--accent-primary),
+          var(--accent-tertiary)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+      }
+      p.subtitle {
+        margin: 4px 0 0;
+        color: var(--text-secondary);
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .theme-toggle {
+        padding: 10px 20px;
+        border-radius: 12px;
+        border: 2px solid var(--border);
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
+      }
+      .theme-toggle:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--accent-primary);
+      }
+      .controls {
+        display: grid;
+        gap: 16px;
+        background: var(--bg-secondary);
+        padding: 24px;
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border);
+        margin-bottom: 32px;
+        animation: fadeIn 0.4s ease;
+      }
+      .control-row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+        min-width: 180px;
+      }
+      .controls label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      select,
+      input[type="text"],
+      input[type="number"] {
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 2px solid var(--border);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        outline: none;
+        animation: slideIn 0.4s ease;
+      }
+      select:focus,
+      input:focus {
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+      }
+      select:hover,
+      input:hover {
+        border-color: var(--accent-secondary);
+      }
+      button {
+        padding: 12px 24px;
+        border-radius: 12px;
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      button::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+      }
+      button:active::before {
+        width: 300px;
+        height: 300px;
+      }
+      button.primary {
+        background: linear-gradient(
+          135deg,
+          var(--accent-primary),
+          var(--accent-tertiary)
+        );
+        color: white;
+        box-shadow: var(--shadow-md);
+      }
+      button.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+      button.ghost {
+        background: transparent;
+        color: var(--text-primary);
+        border: 2px solid var(--border);
+      }
+      button.ghost:hover {
+        background: var(--bg-tertiary);
+        border-color: var(--accent-primary);
+      }
+      .button-group {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 24px;
+        margin-top: 24px;
+      }
+      .card {
+        background: var(--bg-secondary);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        animation: fadeIn 0.4s ease;
+      }
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(
+          90deg,
+          var(--accent-primary),
+          var(--accent-tertiary)
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .card:hover::before {
+        opacity: 1;
+      }
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl);
+      }
+      .col-span-4 {
+        grid-column: span 4;
+      }
+      .col-span-8 {
+        grid-column: span 8;
+      }
+      .col-span-12 {
+        grid-column: span 12;
+      }
+      @media (max-width: 1200px) {
+        .col-span-8,
+        .col-span-4 {
+          grid-column: span 12;
+        }
+      }
+      @media (max-width: 768px) {
+        .topbar {
+          flex-direction: column;
+          gap: 20px;
+          text-align: center;
+        }
+        .control-row {
+          flex-direction: column;
+        }
+        .control-group {
+          width: 100%;
+        }
+      }
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .card-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+      .card-subtitle {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-top: 4px;
+      }
+      .label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .weather-widget {
+        background: linear-gradient(
+          135deg,
+          rgba(14, 165, 233, 0.1),
+          rgba(139, 92, 246, 0.1)
+        );
+        border-radius: 16px;
+        padding: 20px;
+        margin-top: 16px;
+        border: 1px solid var(--border);
+      }
+      .weather-main {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .weather-temp {
+        font-size: 42px;
+        font-weight: 800;
+        color: var(--text-primary);
+      }
+      .weather-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .weather-condition {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      .weather-location {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      .weather-details {
+        display: flex;
+        gap: 16px;
+        font-size: 13px;
+        color: var(--text-secondary);
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+      }
+      .weather-detail {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .alerts {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      .alert {
+        padding: 16px;
+        border-radius: 12px;
+        font-size: 14px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        animation: slideIn 0.4s ease;
+        border-left: 4px solid;
+      }
+      .alert.warn {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border-color: var(--warning);
+        color: #78350f;
+      }
+      [data-theme="dark"] .alert.warn {
+        background: linear-gradient(135deg, #7c2d12, #9a3412);
+        color: #f1f5f9;
+      }
+      .alert.info {
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        border-color: var(--accent-primary);
+        color: #1e3a8a;
+      }
+      [data-theme="dark"] .alert.info {
+        background: linear-gradient(135deg, #1e3a8a, #1e40af);
+        color: #f1f5f9;
+      }
+      .alert.success {
+        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        border-color: var(--success);
+        color: #064e3b;
+      }
+      [data-theme="dark"] .alert.success {
+        background: linear-gradient(135deg, #064e3b, #047857);
+        color: #f1f5f9;
+      }
+      .alert.error {
+    background:linear-gradient(
+        135deg,
+        #fee2e2,
+        #fecaca
+    );
+
+    border-color:var(--danger);
+
+    color:#7f1d1d;
+  }
+      .alert-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+      }
+      .alert-content {
+        flex: 1;
+      }
+      .alert-title {
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      #notificationArea {
+    margin-top: 16px;
+  }
+      .chart-wrap {
+        width: 100%;
+        height: 380px;
+        margin-top: 20px;
+        position: relative;
+      }
+      .chart-controls {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+      .chart-control-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .chart-control-item .label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .recent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+    
+    max-height: 470px;
+    overflow-y: auto;
+    padding-right: 6px;
+  }
+      .recent-item {
+        padding: 16px;
+        border-radius: 12px;
+        background: linear-gradient(
+          135deg,
+          var(--bg-tertiary),
+          var(--bg-primary)
+        );
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+        animation: slideIn 0.4s ease;
+      }
+      .recent-item:hover {
+        transform: translateX(4px);
+        box-shadow: var(--shadow-md);
+      }
+      .recent-item-header {
+        font-weight: 700;
+        font-size: 15px;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+      }
+      .recent-item-meta {
+        font-size: 12px;
+        color: var(--text-muted);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .recent-item-meta span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .loading-overlay {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-primary);
+        z-index: 9999;
+        animation: fadeIn 0.3s ease;
+      }
+      .loading-card {
+        background: var(--bg-secondary);
+        padding: 32px 40px;
+        border-radius: 20px;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--border);
+        animation: slideUp 0.3s ease;
+      }
+      .spinner {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        border: 5px solid var(--border);
+        border-top-color: var(--accent-primary);
+        border-right-color: var(--accent-tertiary);
+        animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .loading-text-container {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .loading-title {
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--text-primary);
+      }
+      .loading-subtitle {
+        font-size: 14px;
+        color: var(--text-muted);
+      }
+      .divider {
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--border),
+          transparent
+        );
+        margin: 20px 0;
+      }
+      .small-muted {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg-primary);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 5px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-primary);
+      }
+      @media (max-width: 640px) {
+        h1 {
+          font-size: 22px;
+        }
+        .logo {
+          width: 48px;
+          height: 48px;
+          font-size: 20px;
+        }
+        .controls {
+          padding: 16px;
+        }
+        .card {
+          padding: 16px;
+        }
+        .chart-wrap {
+          height: 280px;
+        }
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateX(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      @keyframes slideIn {
+    from {
+      opacity:0;
+      transform:translateX(-20px);
+    }
+    to {
+      opacity:1;
+      transform:translateX(0);
+    }
+  }
+
+.summary {
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+    margin-top:20px;
+  }
+
+
+.pill {
+    background:var(--bg-tertiary);
+    border:1px solid var(--border);
+    padding:16px;
+    border-radius:14px;
+  }
+
+
+.pill b {
+    display:block;
+    margin-top:8px;
+    color:var(--text-primary);
+    font-size:16px;
+  }
+
+
+.final-value {
+    margin-top:25px;
+    padding:25px;
+    text-align:center;
+    border-radius:18px;
+    background:linear-gradient(
+        135deg,
+        rgba(14,165,233,0.15),
+        rgba(139,92,246,0.15)
+        );
+      }
+
+.final-value .big {
+    font-size:48px;
+    font-weight:800;
+    color:var(--accent-primary);
+  }
+
+.table-wrap{
+    margin-top:20px;
+    max-height:560px;
+    overflow-y:auto;
+    overflow-x:auto;
+    border:1px solid var(--border);
+    border-radius:12px;
+  }
+
+thead th{
+    position:sticky;
+    top:0;
+    z-index:10;
+    background:var(--bg-tertiary);
+  }
+
+table {
+    width:100%;
+    border-collapse:collapse;
+  }
+
+th {
+    padding:15px;
+    text-align:left;
+    background:var(--bg-tertiary);
+    border-bottom:1px solid var(--border);
+  }
+
+td {
+    padding:15px;
+    border-bottom:1px solid var(--border);
+  }
+
+tbody tr:hover {
+    background:var(--bg-tertiary);
+  }
+
+    </style>
+  </head>
+  <body data-theme="light">
+    <div class="container">
+      <div class="topbar">
+        <div class="brand">
+          <div class="logo">EP</div>
+          <div>
+            <h1>EcoPredict</h1>
+            <p class="subtitle">Renewable Energy Forecasting Dashboard</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center">
+          <button class="theme-toggle" onclick="toggleTheme()">
+            Dark Mode
+          </button>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="control-row">
+          <div class="control-group">
+            <label>State / Region</label>
+            <select id="stateSelect">
+              <option value="">Select State</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>Energy Type</label>
+            <select id="energyType">
+              <option value="wind_energy">Wind Energy</option>
+              <option value="solar_energy">Solar Energy</option>
+              <option value="other_renewable_energy">Other Renewable</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>Forecast Unit</label>
+            <select id="forecastUnit">
+            <option value="months">Months</option>
+            <option value="days">Days</option>
+            </select> 
+          </div>
+          <div class="control-group">
+            <label>Forecast Horizon</label>
+            <input
+              type="number"
+              id="forecastHorizon"
+              min="1"
+              max="60"
+              value="12"
+              placeholder="e.g. 12"
+            />
+          </div>
+          <div class="control-group">
+            <label>Graph Type</label>
+            <select id="graphType">
+              <option value="line">Line Chart</option>
+              <option value="bar">Bar Chart</option>
+              <option value="scatter">Scatter Plot</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="control-row" style="align-items: flex-end">
+          <div class="button-group" style="margin-left: auto">
+            <button class="primary" onclick="generateGraph()">
+              Generate Forecast
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+
+  <div class="card col-span-4">
+
+    <div>
+      <div class="label">🌤️ Weather Conditions</div>
+
+      <div class="weather-widget">
+
+        <div class="weather-main" id="weatherMain">
+
+          <div class="weather-temp"> — </div>
+
+          <div class="weather-info">
+
+            <div class="weather-condition" id="weatherDesc">
+            —
+            </div>
+
+            <div class="weather-location" id="weatherLoc">
+            📍 Select a state
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="weather-details" id="weatherDetails">
+
+          <div class="weather-detail">
+          💨 Wind: —
+          </div>
+
+          <div class="weather-detail">
+          💧 Humidity: —
+          </div>
+
+        </div>
+
+
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <div>
+
+      <div class="label">
+        Alerts & Insights
+      </div>
+
+      <div class="alerts" id="alertsArea">
+
+        <div class="alert info">
+
+          <div class="alert-icon">
+            Info
+          </div>
+
+          <div class="alert-content">
+
+            <div class="alert-title">
+              Getting Started
+            </div>
+
+            <div>
+              Generate a forecast to see AI-powered insights.
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="card col-span-8">
+
+    <div class="card-header">
+
+      <div>
+
+        <div class="card-title">
+          Forecast Overview
+        
+        </div>
+
+        <div class="card-subtitle">
+          Forecast Summary and Status
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="summary">
+
+      <div class="pill">
+        📍 State
+        <b id="rState">Not Selected</b>
+      </div>
+
+      <div class="pill">
+        ⚡ Energy Type
+        <b id="rEnergy">Not Selected</b>
+      </div>
+
+      <div class="pill">
+        📅 Forecast Period
+        <b id="rPeriod">Waiting For Forecast</b>
+      </div>
+
+      <div class="pill">
+        📐 Measurement
+        <b id="rUnitLabel">
+          Not Available
+        </b>
+      </div>
+
+    </div>
+
+    <div class="final-value">
+
+      <div class="big" id="rFinal">
+        -
+      </div>
+
+      <div class="label" id="rFinalLabel">
+
+        Forecast value will appear after generation
+
+      </div>
+
+    </div>
+
+<div id="notificationArea"></div>
+
+  </div>
+
+  <div class="card col-span-12">
+
+    <div class="card-header">
+
+      <div>
+
+        <div class="card-title">
+          Forecast Visualization
+        </div>
+
+        <div class="card-subtitle" id="chart-sub">
+
+          Configure options and click Generate Forecast
+
+        </div>
+
+
+      </div>
+
+      <div class="chart-controls">
+
+        <div class="chart-control-item">
+
+          <div class="label">
+            X-Axis: Forecast Period
+          </div>
+
+        </div>
+
+        <div class="chart-control-item">
+
+          <div class="label">
+            Y-Axis: Energy Generation
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="chart-wrap">
+
+      <canvas id="predictionChart"></canvas>
+    </div>
+  </div>
+
+  <div class="card col-span-12">
+
+    <div class="card-header">
+
+      <div>
+
+        <div class="card-title">
+          Forecast Results
+        </div>
+
+        <div class="card-subtitle">
+          Period-wise Forecast Values
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>#</th>
+
+            <th id="thPeriod">
+              Period
+            </th>
+
+            <th id="thValue">
+              Prediction
+            </th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="tableBody">
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+  <div class="card col-span-12">
+    <div>
+            <div class="card-title">Forecast History</div>
+            <div class="card-subtitle">Recently Generated Forecasts</div>
+            <div class="recent-list" id="recentList">
+              <div
+                class="small-muted"
+                style="text-align: center; padding: 20px"
+              >
+                No forecasts yet
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-card">
+          <div class="spinner"></div>
+          <div class="loading-text-container">
+            <div class="loading-title">Processing...</div>
+            <div class="loading-subtitle" id="loadingText">
+              Generating forecast
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ---------- CONFIG ----------
+      const WEATHER_API_KEY = ""; // Add key for live data.
+      const stateToCity = {
+        "All India": "New Delhi",
+        "Andhra Pradesh": "Hyderabad",
+        "Arunachal Pradesh": "Itanagar",
+        Assam: "Guwahati",
+        Bihar: "Patna",
+        Chhattisgarh: "Raipur",
+        Delhi: "New Delhi",
+        Goa: "Panaji",
+        Gujarat: "Ahmedabad",
+        Haryana: "Chandigarh",
+        "Himachal Pradesh": "Shimla",
+        "Jammu And Kashmir": "Srinagar",
+        Jharkhand: "Ranchi",
+        Karnataka: "Bengaluru",
+        Kerala: "Thiruvananthapuram",
+        "Madhya Pradesh": "Bhopal",
+        Maharashtra: "Mumbai",
+        Manipur: "Imphal",
+        Meghalaya: "Shillong",
+        Mizoram: "Aizawl",
+        Nagaland: "Kohima",
+        Odisha: "Bhubaneswar",
+        Punjab: "Chandigarh",
+        Rajasthan: "Jaipur",
+        Sikkim: "Gangtok",
+        "Tamil Nadu": "Chennai",
+        Telangana: "Hyderabad",
+        Tripura: "Agartala",
+        "Uttar Pradesh": "Lucknow",
+        Uttarakhand: "Dehradun",
+        "West Bengal": "Kolkata",
+        Ladakh: "Leh",
+      };
+      const stateBaseValues = {
+        wind_energy: {
+          "Andhra Pradesh": { base: 80, amp: 40 },
+          Assam: { base: 30, amp: 15 },
+          Gujarat: { base: 60, amp: 30 },
+          Rajasthan: { base: 20, amp: 10 },
+          Kerala: { base: 50, amp: 25 },
+          "Tamil Nadu": { base: 70, amp: 35 },
+          Maharashtra: { base: 55, amp: 28 },
+          Karnataka: { base: 65, amp: 30 },
+          "Madhya Pradesh": { base: 40, amp: 18 },
+          default: { base: 50, amp: 20 },
+        },
+        solar_energy: {
+          "Andhra Pradesh": { base: 60, amp: 25 },
+          Assam: { base: 40, amp: 15 },
+          Gujarat: { base: 90, amp: 35 },
+          Rajasthan: { base: 100, amp: 40 },
+          Kerala: { base: 70, amp: 30 },
+          "Tamil Nadu": { base: 75, amp: 32 },
+          Maharashtra: { base: 65, amp: 28 },
+          Karnataka: { base: 70, amp: 30 },
+          "Madhya Pradesh": { base: 55, amp: 22 },
+          default: { base: 70, amp: 30 },
+        },
+        other_renewable_energy: {
+          default: { base: 12, amp: 6 },
+        },
+      };
+
+      // ---------- INITIAL SETUP & STORAGE ----------
+      let dataStorage = JSON.parse(localStorage.getItem("predictionData")) || {
+        predictions: [],
+      };
+      let theme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", theme);
+      document.body.setAttribute("data-theme", theme);
+      document.querySelector(".theme-toggle").textContent =
+        theme === "dark" ? "Light Mode" : "Dark Mode";
+
+      const themes = {
+        light: {
+          "--bg-primary": "#f8fafc",
+          "--bg-secondary": "#ffffff",
+          "--bg-tertiary": "#f1f5f9",
+          "--text-primary": "#0f172a",
+          "--text-secondary": "#64748b",
+          "--text-muted": "#94a3b8",
+          "--accent-primary": "#0ea5e9",
+          "--accent-secondary": "#06b6d4",
+          "--accent-tertiary": "#8b5cf6",
+          "--success": "#10b981",
+          "--warning": "#f59e0b",
+          "--danger": "#ef4444",
+          "--border": "#e2e8f0",
+          "--shadow-sm": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+          "--shadow-md":
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+          "--shadow-lg":
+            "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+          "--shadow-xl":
+            "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        },
+        dark: {
+          "--bg-primary": "#0f172a",
+          "--bg-secondary": "#1e293b",
+          "--bg-tertiary": "#334155",
+          "--text-primary": "#f1f5f9",
+          "--text-secondary": "#cbd5e1",
+          "--text-muted": "#94a3b8",
+          "--border": "#334155",
+          "--shadow-sm": "0 1px 2px 0 rgba(0, 0, 0, 0.5)",
+          "--shadow-md":
+            "0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)",
+          "--shadow-lg":
+            "0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3)",
+          "--shadow-xl":
+            "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3)",
+        },
+      };
+
+      const states = [
+        "All India",
+        "Andhra Pradesh",
+        "Arunachal Pradesh",
+        "Assam",
+        "Bihar",
+        "Chhattisgarh",
+        "Delhi",
+        "Goa",
+        "Gujarat",
+        "Haryana",
+        "Himachal Pradesh",
+        "Jammu And Kashmir",
+        "Jharkhand",
+        "Karnataka",
+        "Kerala",
+        "Madhya Pradesh",
+        "Maharashtra",
+        "Manipur",
+        "Meghalaya",
+        "Mizoram",
+        "Nagaland",
+        "Odisha",
+        "Punjab",
+        "Rajasthan",
+        "Sikkim",
+        "Tamil Nadu",
+        "Telangana",
+        "Tripura",
+        "Uttar Pradesh",
+        "Uttarakhand",
+        "West Bengal",
+        "Ladakh",
+      ];
+
+      const stateSelect = document.getElementById("stateSelect");
+      states.forEach(function (s) {
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = s;
+        stateSelect.appendChild(opt);
+      });
+
+      let chart;
+
+      function showLoading(text) {
+        if (text === undefined) text = "Working...";
+        document.getElementById("loadingText").textContent = text;
+        document.getElementById("loadingOverlay").style.display = "flex";
+      }
+      function hideLoading() {
+        document.getElementById("loadingOverlay").style.display = "none";
+      }
+      function showNotification(type, title, message) {
+
+    const area = document.getElementById("notificationArea");
+
+    console.log(document.getElementById("notificationArea"));
+
+    area.innerHTML = "";
+
+    const div = document.createElement("div");
+
+    div.className = "alert " + type;
+
+    div.innerHTML = `
+        <div class="alert-icon">
+            ${type === "success" ? "✓" : "!"}
+        </div>
+
+        <div class="alert-content">
+
+            <div class="alert-title">
+                ${title}
+            </div>
+
+            <div>
+                ${message}
+            </div>
+
+        </div>
+    `;
+
+    area.appendChild(div);
+}
+
+      function toggleTheme() {
+        theme = theme === "light" ? "dark" : "light";
+        localStorage.setItem("theme", theme);
+        document.documentElement.setAttribute("data-theme", theme);
+        document.body.setAttribute("data-theme", theme);
+        document.querySelector(".theme-toggle").textContent =
+          theme === "dark" ? "Light Mode" : "Dark Mode";
+        const themeColors = themes[theme];
+        Object.keys(themeColors).forEach(function (prop) {
+          document.documentElement.style.setProperty(prop, themeColors[prop]);
+        });
+        if (chart) {
+          const state = document.getElementById("stateSelect").value;
+          const energyType = document.getElementById("energyType").value;
+          if (state && energyType) generateGraph();
+        }
+      }
+
+      (function autoThemeInit() {
+        if (!localStorage.getItem("theme")) {
+          const h = new Date().getHours();
+          theme = h >= 19 || h < 6 ? "dark" : "light";
+          localStorage.setItem("theme", theme);
+          document.documentElement.setAttribute("data-theme", theme);
+          document.body.setAttribute("data-theme", theme);
+          document.querySelector(".theme-toggle").textContent =
+            theme === "dark" ? "Light Mode" : "Dark Mode";
+          const themeColors = themes[theme];
+          Object.keys(themeColors).forEach(function (prop) {
+            document.documentElement.style.setProperty(prop, themeColors[prop]);
+          });
+        }
+      })();
+
+      // ================= BACKEND CONNECTION =================
+
+const BACKEND_URL = "http://127.0.0.1:5000";
+
+async function predictWithModel(state, energyType, horizon, unit){
+
+    // Convert frontend values to backend values
+    let energy = "";
+
+    if (energyType === "wind_energy")
+        energy = "wind";
+
+    else if (energyType === "solar_energy")
+        energy = "solar";
+
+    else if (energyType === "other_renewable_energy")
+        energy = "other_renewable";
+
+    const requestData = {
+
+        state: state,
+        energy: energy,
+        unit: unit,
+        horizon: horizon
+
+    };
+
+    console.log("Sending to backend:");
+    console.log(requestData);
+
+    const response = await fetch("http://127.0.0.1:5000/predict", {
+
+        method: "POST",
+
+        headers: {
+
+            "Content-Type": "application/json"
+
+        },
+
+        body: JSON.stringify(requestData)
+
+    });
+
+    const data = await response.json();
+
+if (!response.ok) {
+
+    if (data.status === "under_development") {
+        return data;
+    }
+
+    throw new Error(data.error || "Prediction failed");
+}
+
+currentPredictionUnit = data.unit;
+currentEnergyType = data.energy;
+
+return data;
+
+}
+
+      // ---------- CHART RENDERING ----------
+      function renderMainChart(labels, datasets, chartType) {
+
+    const ctx = document
+        .getElementById("predictionChart")
+        .getContext("2d");
+
+    if (chart) chart.destroy();
+
+    // Dynamic axis labels
+    let xAxisLabel = "Period";
+    let yAxisLabel = "Energy Generation (MU / day)";
+
+    if (currentPredictionUnit === "months") {
+        xAxisLabel = "Month";
+    } 
+    else if (currentPredictionUnit === "days") {
+        xAxisLabel = "Date";
+    }
+
+    let chartTitle = "Energy Forecast";
+
+    if (currentEnergyType === "wind") {
+        chartTitle = "Wind Energy Forecast";
+    }
+    else if (currentEnergyType === "solar") {
+        chartTitle = "Solar Energy Forecast";
+    }
+    else if (currentEnergyType === "other_renewable") {
+        chartTitle = "Other Renewable Energy Forecast";
+    }
+
+    const processedDatasets = datasets.map((ds) => {
+
+        if (chartType === "scatter") {
+
+            const points = labels
+                .map((label, i) => {
+
+                    const y = ds.data[i];
+
+                    if (y == null) return null;
+
+                    return {
+                        x: label,
+                        y: y
+                    };
+
+                })
+                .filter((p) => p !== null);
+
+            return {
+                label: ds.label,
+                data: points,
+                borderColor: ds.borderColor,
+                backgroundColor: ds.backgroundColor,
+                pointRadius: 4,
+                showLine: false,
+            };
+
+        }
+
+        return ds;
+
+    });
+
+    chart = new Chart(ctx, {
+        type: chartType,
+        data:
+            chartType === "scatter"
+            ? { datasets: processedDatasets }
+            : {
+                labels: labels,
+                datasets: processedDatasets
+            },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: chartTitle,
+                    color: getComputedStyle(document.body)
+                        .getPropertyValue("--text-primary")
+                        .trim(),
+                    font: {
+                        size: 18,
+                        weight: "bold"
+                    }
+                },
+                legend: {
+                    labels: {
+                        color: getComputedStyle(document.body)
+                            .getPropertyValue("--text-primary")
+                            .trim()
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: "category",
+                    title: {
+                        display: true,
+                        text: xAxisLabel,
+                        color: getComputedStyle(document.body)
+                            .getPropertyValue("--text-primary")
+                            .trim()
+                    },
+                    ticks: {
+                        color: getComputedStyle(document.body)
+                            .getPropertyValue("--text-primary")
+                            .trim(),
+                        maxRotation: 60,
+                        minRotation: 30
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: yAxisLabel,
+                        color: getComputedStyle(document.body)
+                            .getPropertyValue("--text-primary")
+                            .trim()
+                    },
+
+                    ticks: {
+                        color: getComputedStyle(document.body)
+                            .getPropertyValue("--text-primary")
+                            .trim()
+                    }
+                }
+            }
+        }
+    });
+}
+      // ---------- ALERTS & INSIGHTS ----------
+      function generateInsightsAndAlerts(predicted, state, energyType, horizon, unit) {
+        const area = document.getElementById("alertsArea");
+        area.innerHTML = "";
+
+        if (!predicted || predicted.length === 0) {
+          area.innerHTML =
+            '<div class="alert info"><div class="alert-icon">Info</div><div class="alert-content"><div class="alert-title">Getting Started</div><div>Generate a forecast to see AI-powered insights.</div></div></div>';
+          return;
+        }
+
+        const alerts = [];
+        const avg = predicted.reduce((a, b) => a + b, 0) / predicted.length;
+        const lastVal = predicted[predicted.length - 1];
+        const firstVal = predicted[0];
+        const maxVal = Math.max(...predicted);
+        const minVal = Math.min(...predicted);
+        const range = maxVal - minVal;
+        const trendPct = firstVal > 0 ? ((lastVal - firstVal) / firstVal) * 100 : 0;
+
+        alerts.push({
+          type: "info",
+          title: "Forecast Summary",
+          text: `Generated ${horizon} ${unit} forecast for ${state} (${energyType.replace(/_/g, " ")}). Average predicted output: ${avg.toFixed(1)} units. Range: ${minVal.toFixed(1)} – ${maxVal.toFixed(1)}.`,
+        });
+
+        if (trendPct > 15) {
+          alerts.push({
+            type: "success",
+            title: "Strong Upward Trend",
+            text: `Output is projected to rise by ~${trendPct.toFixed(1)}% over the horizon. Consider capacity and grid planning for higher generation.`,
+          });
+        } else if (trendPct < -15) {
+          alerts.push({
+            type: "warn",
+            title: "Downward Trend Detected",
+            text: `Output is projected to decline by ~${Math.abs(trendPct).toFixed(1)}% over the horizon. Review seasonal factors and maintenance schedules.`,
+          });
+        } else {
+          alerts.push({
+            type: "info",
+            title: "Stable Outlook",
+            text: `Predicted generation remains relatively stable (change ≈ ${trendPct.toFixed(1)}%) across the forecast horizon.`,
+          });
+        }
+
+        if (lastVal > avg * 1.4) {
+          alerts.push({
+            type: "warn",
+            title: "Peak Output Expected",
+            text: `The final period shows significantly higher output (${lastVal.toFixed(1)}) than the average (${avg.toFixed(1)}). Prepare for potential surplus.`,
+          });
+        }
+
+        if (avg > 0 && range / avg > 0.6) {
+          alerts.push({
+            type: "warn",
+            title: "High Variability",
+            text: `Large swings detected across the horizon (range ${range.toFixed(1)} units). Expect fluctuating generation conditions.`,
+          });
+        }
+
+        if (avg < 5) {
+          alerts.push({
+            type: "info",
+            title: "Low Generation Levels",
+            text: `Average predicted output is low (${avg.toFixed(1)} units). This may reflect regional resource constraints or seasonal patterns.`,
+          });
+        }
+
+        alerts.forEach(function (a, index) {
+          const div = document.createElement("div");
+          div.className = "alert " + a.type;
+          div.style.animationDelay = index * 0.1 + "s";
+          div.innerHTML =
+            '<div class="alert-icon">' +
+            (a.type === "warn"
+              ? "Warning"
+              : a.type === "success"
+              ? "Success"
+              : "Info") +
+            '</div><div class="alert-content"><div class="alert-title">' +
+            a.title +
+            "</div><div>" +
+            a.text +
+            "</div></div>";
+          area.appendChild(div);
+        });
+      }
+
+      // ---------- WEATHER (If no API key) ----------
+      async function fetchWeatherForState(state) {
+        const city = stateToCity[state] || "New Delhi";
+        const tempEl = document.querySelector(".weather-temp");
+        const descEl = document.getElementById("weatherDesc");
+        const locEl = document.getElementById("weatherLoc");
+        const detailsEl = document.getElementById("weatherDetails");
+
+        if (!WEATHER_API_KEY) {
+          tempEl.textContent = "—";
+          descEl.textContent = "—";
+          locEl.textContent = "—";
+          detailsEl.innerHTML =
+            '<div class="weather-detail">Wind: —</div><div class="weather-detail">Humidity: —</div>';
+          return;
+        }
+
+        try {
+          const url =
+            "http://api.weatherstack.com/current?access_key=" +
+            encodeURIComponent(WEATHER_API_KEY) +
+            "&query=" +
+            encodeURIComponent(city) +
+            "&units=m";
+
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`Weather fetch failed: ${res.status}`);
+
+          const json = await res.json();
+          if (json.error) throw new Error(json.error.info || JSON.stringify(json.error));
+
+          const temp = Math.round(json.current.temperature);
+          const windKph =
+            json.current.wind_speed !== undefined
+              ? json.current.wind_speed
+              : null;
+          const wind = windKph !== null ? (windKph / 3.6).toFixed(1) : "—";
+          const humidity =
+            json.current.humidity !== undefined ? json.current.humidity : "—";
+          const condition = Array.isArray(json.current.weather_descriptions)
+            ? json.current.weather_descriptions.join(", ")
+            : json.current.weather_descriptions || "—";
+
+          tempEl.textContent = temp + "°C";
+          descEl.textContent = condition;
+          locEl.textContent = `${json.location.name || city}, ${
+            json.location.country || ""
+          }`.trim();
+          detailsEl.innerHTML =
+            '<div class="weather-detail">Wind: ' +
+            wind +
+            ' m/s</div><div class="weather-detail">Humidity: ' +
+            humidity +
+            "%</div>";
+        } catch (err) {
+          console.error("Weather fetch failed:", err);
+          tempEl.textContent = "—";
+          descEl.textContent = "—";
+          locEl.textContent = "—";
+          detailsEl.innerHTML =
+            '<div class="weather-detail">Wind: —</div><div class="weather-detail">Humidity: —</div>';
+        }
+      }
+
+      function showAlerts(type, title, message) {
+
+    const area = document.getElementById("alertsArea");
+
+    area.innerHTML = "";
+
+    const div = document.createElement("div");
+
+    div.className = "alert " + type;
+
+    div.innerHTML = `
+
+        <div class="alert-icon">
+            ${
+              type === "success" ? "✓" :
+              type === "warn" ? "⚠" :
+              type === "error" ? "✕" :
+              "ℹ"
+            }
+        </div>
+
+        <div class="alert-content">
+
+            <div class="alert-title">
+                ${title}
+            </div>
+
+            <div>
+                ${message}
+            </div>
+
+        </div>
+
+    `;
+
+    area.appendChild(div);
+
+}
+
+      // ---------- GENERATE GRAPH ----------
+      async function generateGraph() {
+        const state = document.getElementById("stateSelect").value;
+        const energyType = document.getElementById("energyType").value;
+        const graphType = document.getElementById("graphType").value;
+        const unit = document.getElementById("forecastUnit").value;
+        let horizon = parseInt(
+          document.getElementById("forecastHorizon").value,
+          10
+        );
+
+document.getElementById("notificationArea").innerHTML = "";
+
+document.getElementById("tableBody").innerHTML = "";
+
+document.getElementById("rState").textContent = "Not Selected";
+
+document.getElementById("rEnergy").textContent = "Not Selected";
+
+document.getElementById("rPeriod").textContent = "Waiting For Forecast";
+
+document.getElementById("rUnitLabel").textContent = "Not Available";
+
+document.getElementById("rFinal").textContent = "-";
+
+document.getElementById("rFinalLabel").textContent =
+    "Forecast value will appear after generation";
+
+document.getElementById("chart-sub").textContent =
+    "Configure options and click Generate Forecast";
+
+if (chart) {
+    chart.destroy();
+    chart = null;
+}
+
+        if (!state) {
+
+    showAlerts(
+        "warn",
+        "State Required",
+        "Please select a state/region to generate forecast."
+    );
+
+    return;
+}
+
+if (!energyType) {
+
+    showAlerts(
+        "warn",
+        "Energy Type Required",
+        "Please select an energy type."
+    );
+
+    return;
+}
+       if(!horizon){
+
+    showAlerts(
+        "warn",
+        "Forecast Period Required",
+        "Please enter forecast period."
+    );
+
+    return;
+}
+
+if(unit === "months" && (horizon < 1 || horizon > 12)){
+
+    showAlerts(
+        "warn",
+        "Invalid Month Range",
+        "Monthly forecast should be between 1 and 12 months."
+    );
+
+    return;
+
+}
+
+if(unit === "days" && (horizon < 1 || horizon > 365)){
+
+    showAlerts(
+        "warn",
+        "Invalid Day Range",
+        "Daily forecast should be between 1 and 365 days."
+    );
+
+    return;
+
+}
+
+       let forecastHorizonValue = horizon;
+
+if (unit === "months") {
+    forecastHorizonValue = horizon;
+}
+else if (unit === "days") {
+    forecastHorizonValue = horizon;
+}
+
+        try {
+          showLoading("Fetching weather...");
+          await fetchWeatherForState(state);
+
+          showLoading("Generating forecast...");
+          const result = await predictWithModel(
+    state,
+    energyType,
+    forecastHorizonValue,
+    unit
+);
+if (result.status === "under_development") {
+
+    hideLoading();
+
+    document.getElementById("tableBody").innerHTML = "";
+
+    document.getElementById("rState").textContent = "-";
+
+    document.getElementById("rEnergy").textContent = "-";
+
+    document.getElementById("rPeriod").textContent = "-";
+
+    document.getElementById("rUnitLabel").textContent = "-";
+
+    document.getElementById("rFinal").textContent = "-";
+
+    document.getElementById("rFinalLabel").textContent =
+        "Forecast unavailable";
+
+    document.getElementById("chart-sub").textContent =
+        "Visualization unavailable for the selected forecast";
+
+    if (chart) {
+        chart.destroy();
+        chart = null;
+    }
+    document.getElementById("alertsArea").innerHTML = `
+<div class="alert info">
+    <div class="alert-icon">ℹ</div>
+    <div class="alert-content">
+        <div class="alert-title">No Prediction Available</div>
+        <div>This state/energy combination is currently under development.</div>
+    </div>
+</div>`;
+
+    showAlerts(
+        "info",
+        result.title,
+        result.message
+    );
+
+    return;
+}
+          const predicted = result.values || [];
+          showNotification(
+    "success",
+    "Forecast Generated",
+    "Energy forecast generated successfully. Results are ready."
+);
+
+          // Build labels
+          const labels = result.labels;
+
+// ===============================
+// UPDATE PREDICTION SUMMARY
+// ===============================
+
+document.getElementById("rState").textContent = state;
+
+document.getElementById("rEnergy").textContent =
+    energyType.replace(/_/g, " ");
+
+document.getElementById("rPeriod").textContent =
+    `${result.forecast_from} → ${result.forecast_to}`;
+
+if (result.unit === "months") {
+
+    document.getElementById("rUnitLabel").textContent =
+        "Average Daily Generation (MU / Day)";
+
+} 
+else if (result.unit === "days") {
+
+    document.getElementById("rUnitLabel").textContent =
+        "Daily Generation (MU / Day)";
+
+}
+
+if(predicted.length > 0){
+
+    document.getElementById("rFinal").textContent =
+        predicted[predicted.length - 1].toFixed(2);
+
+}
+document.getElementById("rFinalLabel").textContent =
+    "Forecast value for last forecast period";
+
+// ===============================
+// UPDATE PREDICTION TABLE
+// ===============================
+
+const tableBody = document.getElementById("tableBody");
+
+tableBody.innerHTML = "";
+
+labels.forEach((period,index)=>{
+
+    const row = document.createElement("tr");
+
+   row.innerHTML = `
+
+<td>${index + 1}</td>
+
+<td>${period}</td>
+
+<td><b>${predicted[index].toFixed(2)}</b></td>
+
+`;
+
+    tableBody.appendChild(row);
+
+});
+
+          const datasets = [
+            {
+              label: `${state} — ${energyType.replace(/_/g, " ")}`,
+              data: predicted,
+              borderDash: [6, 4],
+              borderWidth: 2,
+              tension: 0.25,
+              pointRadius: 2,
+              showLine: true,
+              borderColor: getComputedStyle(document.body)
+                .getPropertyValue("--accent-primary")
+                .trim(),
+              backgroundColor: getComputedStyle(document.body)
+                .getPropertyValue("--accent-primary")
+                .trim(),
+            },
+          ];
+
+          renderMainChart(
+            labels,
+            datasets,
+            graphType === "scatter" ? "scatter" : graphType
+          );
+
+          document.getElementById("chart-sub").textContent =
+            `${state} · ${energyType.replace(/_/g, " ")} · Next ${horizon} ${unit}`;
+
+          generateInsightsAndAlerts(
+            predicted,
+            state,
+            energyType,
+            horizon,
+            unit
+          );
+
+          dataStorage.predictions.unshift({
+
+    id: Date.now(),
+
+    state: state,
+
+    energyType: energyType,
+
+    horizon: horizon,
+
+    unit: unit,
+
+    forecastFrom: result.forecast_from,
+
+    forecastTo: result.forecast_to,
+
+    lastValue: predicted[predicted.length - 1],
+
+    generatedAt: new Date().toISOString()
+
+});
+          dataStorage.predictions = dataStorage.predictions.slice(0, 10);
+          localStorage.setItem("predictionData", JSON.stringify(dataStorage));
+          renderRecent();
+        } catch(err){
+
+    console.error(err);
+    document.getElementById("tableBody").innerHTML = "";
+    document.getElementById("rState").textContent = "Not Available";
+    document.getElementById("rEnergy").textContent = "Not Available";
+    document.getElementById("rPeriod").textContent = "-";
+    document.getElementById("rUnitLabel").textContent = "-";
+    document.getElementById("rFinal").textContent = "-";
+    document.getElementById("rFinalLabel").textContent =
+        "Forecast unavailable";
+
+    document.getElementById("chart-sub").textContent =
+        "Prediction unavailable";
+
+    if(chart){
+        chart.destroy();
+        chart = null;
+    }
+
+    document.getElementById("alertsArea").innerHTML = `
+<div class="alert error">
+    <div class="alert-icon">✕</div>
+    <div class="alert-content">
+        <div class="alert-title">Prediction Failed</div>
+        <div>Unable to generate forecast.</div>
+    </div>
+</div>`;
+
+    showAlerts(
+        "error",
+        "Prediction Failed",
+        "The forecasting service is temporarily unavailable. Please try again later."
+    );
+
+}
+ finally {
+          hideLoading();
+        }
+      }
+
+      // ---------- RECENT LIST UI ----------
+      function renderRecent() {
+    const el = document.getElementById("recentList");
+    const arr = dataStorage.predictions || [];
+    if (!arr.length) {
+        el.innerHTML =
+        '<div class="small-muted" style="text-align:center;padding:20px;">No forecasts generated yet</div>';
+        return;
+    }
+    el.innerHTML = "";
+    arr.slice(0,10).forEach(function(item,index){
+        const d = new Date(item.generatedAt)
+        .toLocaleString("en-IN",{
+            day:"2-digit",
+            month:"short",
+            year:"numeric",
+            hour:"2-digit",
+            minute:"2-digit"
+        });
+
+        const energyName =
+        item.energyType.replace(/_/g," ")
+        .replace(/\b\w/g, c => c.toUpperCase());
+        const div=document.createElement("div");
+        div.className="recent-item";
+        div.innerHTML = `
+        <div class="recent-item-header">
+            ${item.state} — ${energyName}
+        </div>
+        <div class="recent-item-meta">
+
+            <span>
+            📅 Forecast Period:
+            ${item.forecastFrom} – ${item.forecastTo}
+            </span>
+
+            <span>
+            📈 Forecast Horizon:
+            ${item.horizon} ${item.unit}
+            </span>
+
+            <span>
+            ⚡ Last Forecast Value:
+            ${item.lastValue.toFixed(2)} MU/day
+            </span>
+
+            <span>
+            🕒 Generated:
+            ${d}
+            </span>
+
+        </div>`;
+        el.appendChild(div);
+    });
+}
+
+      // ---------- INITIALIZATION ----------
+      renderRecent();
+      document
+        .getElementById("stateSelect")
+        .addEventListener("change", function (e) {
+          const val = e.target.value;
+          if (val) fetchWeatherForState(val);
+        });
+
+      window.generateGraph = generateGraph;
+      window.toggleTheme = toggleTheme;
+    </script>
+  </body>
+</html>
